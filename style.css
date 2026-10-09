@@ -1,0 +1,239 @@
+:root {
+  --red: #c0392b;
+  --red-deep: #8e1c12;
+  --gold: #d4a24a;
+  --ink: #1c1a17;
+  --paper: #efe4cc;
+  --jade: #2f6d5a;
+  --shadow: 0 8px 30px rgba(0,0,0,.45);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0c0a; }
+body {
+  font-family: "KaiTi", "STKaiti", "楷体", "Kaiti SC", "SimSun", "宋体", serif;
+  color: var(--paper);
+  user-select: none;
+}
+
+#app { position: fixed; inset: 0; }
+#app canvas { display: block; touch-action: none; }
+
+/* ===== 加载页 ===== */
+#loader {
+  position: fixed; inset: 0; z-index: 50;
+  background: radial-gradient(circle at 50% 40%, #2a2118 0%, #100c08 70%);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .8s ease;
+}
+#loader.hidden { opacity: 0; pointer-events: none; }
+.loader-inner { text-align: center; }
+.seal {
+  width: 84px; height: 84px; margin: 0 auto 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "KaiTi", "STKaiti", "楷体", "Kaiti SC", serif; font-size: 52px; color: #fff;
+  background: linear-gradient(145deg, #d8463a, #931a10);
+  border: 3px solid #e8c878; border-radius: 14px;
+  box-shadow: 0 0 0 2px #5a120a, 0 10px 30px rgba(0,0,0,.6);
+  transform: rotate(-4deg);
+}
+.loader-text { font-size: 18px; letter-spacing: 6px; color: var(--gold); margin-bottom: 14px; }
+.loader-bar { width: 180px; height: 4px; background: rgba(255,255,255,.12); border-radius: 2px; overflow: hidden; margin: 0 auto; }
+.loader-bar span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--gold), #fff); animation: load 1.6s ease-in-out infinite; }
+@keyframes load { 0%{width:0; margin-left:0;} 50%{width:70%;} 100%{width:0; margin-left:100%;} }
+
+/* ===== 顶栏 ===== */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, rgba(0,0,0,.55), transparent);
+  pointer-events: none;
+}
+.title { display: flex; flex-direction: column; line-height: 1.1; }
+.title-main { font-family: "KaiTi", "STKaiti", "楷体", "Kaiti SC", serif; font-size: 30px; color: var(--gold); text-shadow: 0 2px 8px rgba(0,0,0,.7); letter-spacing: 4px; }
+.title-sub { font-size: 12px; letter-spacing: 8px; color: rgba(239,228,204,.6); margin-top: 2px; }
+.top-actions { display: flex; gap: 10px; pointer-events: auto; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(212,162,74,.4);
+  background: rgba(20,16,12,.55); backdrop-filter: blur(6px);
+  color: var(--paper); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.icon-btn:hover { background: rgba(192,57,43,.6); border-color: var(--gold); }
+
+/* ===== 回合面板 ===== */
+#turn-panel {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 20;
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 18px; border-radius: 30px;
+  background: rgba(20,16,12,.55); backdrop-filter: blur(8px);
+  border: 1px solid rgba(212,162,74,.25);
+  box-shadow: var(--shadow);
+}
+.turn-card { display: flex; align-items: center; gap: 8px; opacity: .4; transition: .3s; }
+.turn-card.active { opacity: 1; }
+.turn-dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.turn-card.red .turn-dot { background: var(--red); color: var(--red); }
+.turn-card.black .turn-dot { background: #2b2825; color: #000; border: 1px solid #555; }
+.turn-label { font-size: 14px; letter-spacing: 2px; }
+.turn-card.active .turn-label { color: var(--gold); font-weight: 700; }
+.turn-vs { font-family: "KaiTi", "STKaiti", "楷体", "Kaiti SC", serif; color: rgba(212,162,74,.6); font-size: 18px; }
+
+/* ===== 状态提示 ===== */
+#status-toast {
+  position: fixed; top: 130px; left: 50%; transform: translateX(-50%) translateY(-10px); z-index: 25;
+  padding: 12px 28px; border-radius: 8px;
+  background: linear-gradient(145deg, #931a10, #5a120a);
+  border: 1px solid var(--gold); color: #fff;
+  font-family: "KaiTi", "STKaiti", "楷体", "Kaiti SC", serif; font-size: 26px; letter-spacing: 6px;
+  box-shadow: 0 0 30px rgba(192,57,43,.5), var(--shadow);
+  opacity: 0; transition: .4s; pointer-events: none;
+  text-shadow: 0 2px 6px rgba(0,0,0,.6);
+}
+#status-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.hidden { display: none !important; }
+
+/* ===== 底栏 ===== */
+#bottombar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  display: flex; justify-content: center; gap: 12px;
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, rgba(0,0,0,.6), transparent);
+  pointer-events: none;
+}
+.action-btn {
+  pointer-events: auto;
+  padding: 10px 22px; border-radius: 24px;
+  border: 1px solid rgba(212,162,74,.4);
+  background: rgba(20,16,12,.6); backdrop-filter: blur(6px);
+  color: var(--paper); font-family: inherit; font-size: 15px; letter-spacing: 3px;
+  cursor: pointer; transition: .2s;
+}
+.action-btn:hover { border-color: var(--gold); background: rgba(60,40,20,.7); }
+.action-btn.primary { background: linear-gradient(145deg, #c0392b, #8e1c12); border-color: var(--gold); color: #fff; }
+.action-btn.primary:hover { background: linear-gradient(145deg, #d8463a, #931a10); }
+.action-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ===== 配乐面板（独立于音效） ===== */
+.music-panel {
+  position: fixed; bottom: 78px; right: 16px; z-index: 20;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 24px;
+  background: rgba(20,16,12,.6); backdrop-filter: blur(8px);
+  border: 1px solid rgba(212,162,74,.3);
+  box-shadow: var(--shadow);
+}
+.mp-label { font-size: 13px; color: var(--gold); letter-spacing: 2px; }
+.mp-select {
+  background: rgba(20,16,12,.75); color: var(--paper);
+  border: 1px solid rgba(212,162,74,.3); border-radius: 18px;
+  padding: 5px 12px; font-family: inherit; font-size: 13px; outline: none;
+  max-width: 150px;
+}
+.mp-select option { background: #1c1a17; color: var(--paper); }
+.mp-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid rgba(212,162,74,.4);
+  background: rgba(20,16,12,.6); color: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; transition: .2s;
+  font-family: inherit;
+}
+.mp-btn:hover { border-color: var(--gold); background: rgba(60,40,20,.7); }
+.mp-file-btn { background: rgba(192,57,43,.5); border-color: var(--gold); font-size: 16px; }
+.mp-file-btn:hover { background: rgba(192,57,43,.75); }
+.mp-btn input { display: none; }
+.mp-hint {
+  position: absolute; bottom: 38px; right: 0; white-space: nowrap;
+  background: rgba(20,16,12,.9); border: 1px solid rgba(212,162,74,.4);
+  color: var(--gold); font-size: 11px; padding: 4px 10px; border-radius: 12px;
+  pointer-events: none; box-shadow: var(--shadow);
+}
+
+/* ===== 弹窗 ===== */
+.modal { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal-card {
+  max-width: 460px; width: 100%;
+  background: linear-gradient(160deg, #2a2118, #181210);
+  border: 1px solid rgba(212,162,74,.4); border-radius: 16px;
+  padding: 28px 26px; box-shadow: var(--shadow);
+}
+.modal-card h2 { font-family: "KaiTi", "STKaiti", "楷体", "Kaiti SC", serif; color: var(--gold); font-size: 28px; margin-bottom: 16px; letter-spacing: 4px; text-align: center; }
+.modal-card ul { list-style: none; margin-bottom: 22px; }
+.modal-card li { padding: 8px 0; border-bottom: 1px dashed rgba(212,162,74,.18); font-size: 14px; line-height: 1.7; color: rgba(239,228,204,.85); }
+.modal-card li b { color: var(--gold); }
+.modal-card .action-btn { width: 100%; }
+
+/* 致命错误页 */
+#fatal { z-index: 60; }
+.fatal-card { text-align: center; }
+.fatal-card .seal { margin-bottom: 16px; transform: rotate(0); }
+.fatal-card p { color: rgba(239,228,204,.9); font-size: 16px; line-height: 1.8; margin-bottom: 18px; }
+.fatal-card small { color: rgba(212,162,74,.7); font-size: 13px; }
+
+/* ===== 横屏提示遮罩（仅窄屏竖屏时显示） ===== */
+.rotate-hint {
+  position: fixed; inset: 0; z-index: 70;
+  background: radial-gradient(circle at 50% 40%, #2a2118 0%, #100c08 70%);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+}
+.rotate-hint.hidden { display: none !important; }
+.rh-inner { padding: 30px; }
+.rh-icon { font-size: 56px; margin-bottom: 18px; animation: rhRot 2s ease-in-out infinite; }
+.rh-title { font-family: "KaiTi","STKaiti","楷体","Kaiti SC",serif; font-size: 26px; color: var(--gold); letter-spacing: 6px; margin-bottom: 10px; }
+.rh-sub { font-size: 14px; color: rgba(239,228,204,.6); letter-spacing: 2px; }
+@keyframes rhRot { 0%,100%{ transform: rotate(0); } 50%{ transform: rotate(-90deg); } }
+
+@media (max-width: 640px) {
+  /* 顶栏适配刘海屏安全区 */
+  #topbar { padding: calc(8px + env(safe-area-inset-top)) 14px 10px; }
+  .title-main { font-size: 22px; letter-spacing: 2px; }
+  .title-sub { display: none; }
+  .icon-btn { width: 38px; height: 38px; font-size: 17px; }
+
+  /* 回合面板 */
+  #turn-panel { top: calc(52px + env(safe-area-inset-top)); padding: 6px 12px; gap: 8px; }
+  .turn-label { font-size: 12px; letter-spacing: 1px; }
+  .turn-dot { width: 12px; height: 12px; }
+
+  /* 底栏：按钮触摸目标 ≥44px，安全区适配 */
+  #bottombar { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); gap: 8px; }
+  .action-btn { padding: 11px 16px; font-size: 13px; letter-spacing: 2px; min-height: 40px; }
+
+  /* 状态提示 */
+  #status-toast { font-size: 20px; padding: 10px 20px; top: calc(110px + env(safe-area-inset-top)); }
+
+  /* 配乐面板：窄屏紧凑布局 */
+  .music-panel { bottom: calc(64px + env(safe-area-inset-bottom)); right: 8px; padding: 6px 8px; gap: 5px; }
+  .mp-label { display: none; }
+  .mp-select { max-width: 96px; font-size: 11px; padding: 5px 8px; min-height: 32px; }
+  .mp-btn { width: 32px; height: 32px; font-size: 13px; }
+  .mp-file-btn { font-size: 15px; }
+
+  /* 弹窗内边距 */
+  .modal-card { padding: 22px 20px; }
+  .modal-card h2 { font-size: 24px; }
+  .modal-card li { font-size: 13px; }
+}
+
+/* 超窄屏（≤360px）进一步压缩 */
+@media (max-width: 360px) {
+  .title-main { font-size: 19px; }
+  .action-btn { padding: 10px 12px; font-size: 12px; letter-spacing: 1px; }
+  .mp-select { max-width: 80px; }
+}
+
+/* 横屏且窄高比时（手机横屏），压缩顶/底栏腾出空间 */
+@media (orientation: landscape) and (max-height: 500px) {
+  #topbar { padding: 6px 14px; }
+  .title { display: none; }
+  #turn-panel { top: 8px; padding: 4px 10px; }
+  .turn-label { font-size: 11px; }
+  #bottombar { padding: 6px 12px calc(6px + env(safe-area-inset-bottom)); }
+  .action-btn { padding: 7px 14px; min-height: 34px; font-size: 12px; }
+  .music-panel { bottom: calc(52px + env(safe-area-inset-bottom)); }
+}

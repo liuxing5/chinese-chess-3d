@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0d0c0a" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>三维象棋 · 楚汉风云</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- 加载遮罩 -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="seal">棋</div>
+      <div class="loader-text">布阵中…</div>
+      <div class="loader-bar"><span></span></div>
+    </div>
+  </div>
+
+  <!-- 竖屏提示遮罩：手机竖屏时引导横屏体验 -->
+  <div id="rotate-hint" class="rotate-hint hidden">
+    <div class="rh-inner">
+      <div class="rh-icon">📱↻</div>
+      <div class="rh-title">请横屏对弈</div>
+      <div class="rh-sub">旋转设备至横屏，体验更佳</div>
+    </div>
+  </div>
+
+  <!-- 3D 画布容器 -->
+  <div id="app"></div>
+
+  <!-- 顶部标题栏 -->
+  <header id="topbar">
+    <div class="title">
+      <span class="title-main">楚汉风云</span>
+      <span class="title-sub">三维象棋</span>
+    </div>
+    <div class="top-actions">
+      <button id="btn-sound" class="icon-btn" title="声音开关">🔊</button>
+      <button id="btn-help" class="icon-btn" title="玩法说明">❓</button>
+    </div>
+  </header>
+
+  <!-- 回合指示 -->
+  <div id="turn-panel">
+    <div class="turn-card red active">
+      <div class="turn-dot"></div>
+      <div class="turn-label">红方行棋</div>
+    </div>
+    <div class="turn-vs">对</div>
+    <div class="turn-card black">
+      <div class="turn-dot"></div>
+      <div class="turn-label">黑方行棋</div>
+    </div>
+  </div>
+
+  <!-- 状态提示（将军/胜负） -->
+  <div id="status-toast" class="hidden"></div>
+
+  <!-- 底部操作栏 -->
+  <footer id="bottombar">
+    <button id="btn-undo" class="action-btn">悔棋</button>
+    <button id="btn-restart" class="action-btn primary">重新开局</button>
+    <button id="btn-camera" class="action-btn">翻转视角</button>
+  </footer>
+
+  <!-- 配乐面板（独立于音效：可分别开关） -->
+  <aside id="music-panel" class="music-panel">
+    <span class="mp-label">配乐</span>
+    <select id="music-select" class="mp-select" aria-label="选择配乐曲目">
+      <option value="">— 关闭 —</option>
+      <option value="dajiang">大江东去 · 原创</option>
+      <option value="jianying">剑影江湖 · 原创</option>
+      <option value="gaixia">垓下月 · 原创</option>
+      <option value="kaixuan">凯旋 · 原创</option>
+    </select>
+    <button id="btn-music" class="mp-btn" title="播放 / 暂停配乐">▶</button>
+    <label class="mp-btn mp-file-btn" title="加载本地音频（mp3/wav 等）" for="music-file">
+      <span>🎵</span>
+      <input id="music-file" type="file" accept="audio/*" hidden>
+    </label>
+    <span class="mp-hint" id="mp-hint" hidden>播放您自有的经典配乐</span>
+  </aside>
+
+  <!-- 玩法说明弹窗 -->
+  <div id="help-modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>玩法说明</h2>
+      <ul>
+        <li><b>红先黑后</b>，双人同屏对弈，点击己方棋子选中，再点目标位置落子。</li>
+        <li>选中后高亮显示可走点（绿色）与可吃点（红色）。</li>
+        <li>规则完整：马蹩腿、象塞眼、炮翻山、卒过河、将帅不见面、将军必应。</li>
+        <li>将死对方即获胜。</li>
+        <li>鼠标拖拽可旋转视角，滚轮缩放；手机单指拖拽视角，点按落子，双指缩放。</li>
+      </ul>
+      <button class="action-btn primary" id="btn-help-close">明白了</button>
+    </div>
+  </div>
+
+  <!-- 模块入口：Three.js 已下载到本地 vendor/，无需外网，避免 CDN 被墙卡死 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/"
+    }
+  }
+  </script>
+  <script>
+    // 加载兜底：本地资源正常不会触发；仅在异常时给出提示而非永久卡在加载页
+    function __showFatal(msg) {
+      var l = document.getElementById('loader'); if (l) l.classList.add('hidden');
+      var el = document.getElementById('fatal');
+      if (!el) { el = document.createElement('div'); el.id = 'fatal'; el.className = 'modal'; document.body.appendChild(el); }
+      el.innerHTML = '<div class="modal-card fatal-card"><div class="seal">棋</div><p>' + msg + '</p><button class="action-btn primary" onclick="location.reload()">重新加载</button></div>';
+    }
+    window.__xiangqiFatal = __showFatal;
+    setTimeout(function () { if (!window.__xiangqiReady) __showFatal('加载超时<br><small>请刷新重试；若反复出现请确认浏览器支持 WebGL</small>'); }, 20000);
+  </script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
